@@ -1,3 +1,4 @@
+import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.naive_bayes import MultinomialNB
@@ -27,4 +28,7 @@ def create_model():
 
     score = pipe.score(X_test, y_test)
 
-    return pipe, score
+    with open("pipeline.pkl", "wb") as file:
+        pickle.dump(pipe, file)
+
+create_model()

@@ -42,6 +42,8 @@ docker_deploy:
 
 run_api:
 	uvicorn api.fast:app --reload
-	print('Yes')
+
+create_model:
+	python -m fakenews.model
 
 # Tests
