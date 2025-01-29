@@ -1,8 +1,7 @@
-import pandas as pd
+import pickle
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from fakenews.model import create_model
 # from taxifare.ml_logic.registry import load_model
 
 app = FastAPI()
@@ -51,7 +50,7 @@ def predict(
 def root():
     return {'greeting': 'Hello, this is your final project'}
 
-@app.get("/test")
-def test():
-    pipe, score = create_model()
-    return {'This is the score': score}
+@app.get("/pipe")
+def pipe():
+    pipe = pickle.load(open("pipeline.pkl","rb"))
+    return {'These are the pipeline parameters': list(pipe.get_params())}
