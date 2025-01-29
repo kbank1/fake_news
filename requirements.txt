@@ -1,2 +1,2 @@
-# To complete
-# Hello
+nltk
+transformers
