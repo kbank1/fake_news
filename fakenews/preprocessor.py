@@ -1,5 +1,8 @@
 import pandas as pd
 
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+
 def remove_duplicates_errors(data: pd.DataFrame) -> pd.DataFrame:
     """
     Clean raw data by:
@@ -21,3 +24,28 @@ def remove_duplicates_errors(data: pd.DataFrame) -> pd.DataFrame:
     data = data.drop(columns=["text_len", "title_len"])
 
     return data
+
+def preprocessing(text):
+    """
+    Preprocess data by:
+    - removing whitespaces and numbers
+    - putting in lowercase
+    - tokenizing and removing stopwords
+    """
+    # Remove whitespaces
+    text = text.strip()
+
+    # Put in lowercase
+    text = text.lower()
+
+    # Remove numbers
+    text = ''.join(char for char in text if not char.isdigit())
+
+    # Tokenize
+    tokenized = word_tokenize(text)
+
+    # Remove stopwords
+    stop_words = set(stopwords.words('english'))
+    text = ' '.join(word for word in tokenized if not word in stop_words)
+
+    return text

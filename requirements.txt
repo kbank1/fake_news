@@ -1,5 +1,5 @@
 nltk
-transformers
+#transformers
 wheel
 nbresult
 colorama

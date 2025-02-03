@@ -3,7 +3,7 @@ import pandas as pd
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from taxifare.ml_logic.registry import load_model
+from fakenews.preprocessor import preprocessing
 
 app = FastAPI()
 app.state.model = pickle.load(open("pipeline.pkl","rb"))
@@ -25,7 +25,7 @@ def predict(text: str):
     pipe = app.state.model
     assert pipe is not None
 
-    #X_processed = preprocess_features(X_pred) ADD AFTER PUTTING PREPROCESSOR IN PIPE
+    X_pred = X_pred.apply(preprocessing)
 
     prediction = pipe.predict(X_pred)[0]
 
