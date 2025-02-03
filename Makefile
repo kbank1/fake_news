@@ -44,6 +44,6 @@ run_api:
 	uvicorn api.fast:app --reload
 
 create_model:
-	python -m fakenews.model
+	python -c 'from fakenews.model import create_model; create_model()'
 
 # Tests

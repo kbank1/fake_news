@@ -5,6 +5,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from fakenews.data import load_data
+from fakenews.preprocessor import preprocessing
 
 def create_model():
     """
@@ -20,6 +21,8 @@ def create_model():
     X = data['text']
     y = data['fake']
 
+    X = X.apply(preprocessing)
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, random_state=0)
 
     pipe = make_pipeline(TfidfVectorizer(), MultinomialNB())
@@ -31,4 +34,4 @@ def create_model():
     with open("pipeline.pkl", "wb") as file:
         pickle.dump(pipe, file)
 
-create_model()
+    print(f"✅ Model created with accuracy of: {round(score,2)}")
