@@ -2,11 +2,13 @@ import pickle
 import pandas as pd
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from fakenews.preprocessor import preprocessing
 
 app = FastAPI()
-app.state.model = pickle.load(open("pipeline.pkl","rb"))
+app.state.model = pickle.load(open("model.pkl","rb"))
+app.state.tk = pickle.load(open("tk.pkl","rb"))
 
 # Allowing all middleware is optional, but good practice for dev purposes
 app.add_middleware(
@@ -20,18 +22,21 @@ app.add_middleware(
 @app.get("/predict")
 def predict(text: str):
 
+    model = app.state.model
+    assert model is not None
+
+    max_len = 300
+
     X_pred = pd.Series(text)
-
-    pipe = app.state.model
-    assert pipe is not None
-
     X_pred = X_pred.apply(preprocessing)
+    X_pred_token = app.state.tk.texts_to_sequences(X_pred)
+    X_pred_pad = pad_sequences(X_pred_token,  padding='pre', maxlen=max_len)
 
-    prediction = pipe.predict(X_pred)[0]
+    prediction = model.predict(X_pred_pad)[0][0]
 
-    if prediction == 0:
+    if prediction < 0.5:
         result = 'True'
-    elif prediction == 1:
+    elif prediction >= 0.5:
         result = 'Fake'
     else:
         result = 'ERROR'
@@ -42,9 +47,9 @@ def predict(text: str):
 def root():
     return {'Greeting': 'Hello, this is your final project'}
 
-@app.get("/pipe")
-def pipe():
-    pipe = app.state.model
-    assert pipe is not None
+@app.get("/layers")
+def layers():
+    model = app.state.model
+    assert model is not None
 
-    return {'These are the pipeline parameters': list(pipe.get_params())}
+    return {'These are the layers of our model': [layer.name for layer in model.layers]}
