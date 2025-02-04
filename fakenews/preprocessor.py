@@ -3,13 +3,16 @@ import pandas as pd
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 
-def remove_duplicates_errors(data: pd.DataFrame) -> pd.DataFrame:
+def remove_duplicates_errors(data: pd.DataFrame, title=True) -> pd.DataFrame:
     """
     Clean raw data by:
     - removing duplicates within fake-category (keep 1)
     - removing duplicates across fake-categories (delete both)
     - deleting texts that are shorter than their title (error messages, headers etc.)
     """
+    #drop nas
+    data=data.dropna(subset="text")
+
     # Remove duplicates within fake-category
     data = data.drop_duplicates(subset=("text", "fake"), keep='first', ignore_index=True)
 
@@ -17,13 +20,15 @@ def remove_duplicates_errors(data: pd.DataFrame) -> pd.DataFrame:
     data = data.drop_duplicates(subset=("text"), keep=False, ignore_index=True)
 
     # Delete false texts
-    data["text_len"] = data['text'].str.len()
-    data["title_len"] = data['title'].str.len()
-    data = data[data["text_len"] >= data["title_len"]]
+    if title==True:
+        data["text_len"] = data['text'].str.len()
+        data["title_len"] = data['title'].str.len()
+        data = data[data["text_len"] >= data["title_len"]]
 
-    data = data.drop(columns=["text_len", "title_len"])
+        data = data.drop(columns=["text_len", "title_len"])
 
     return data
+
 
 def preprocessing(text):
     """
