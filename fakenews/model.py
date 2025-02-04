@@ -1,8 +1,15 @@
 import pickle
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import make_pipeline
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.feature_extraction.text import TfidfVectorizer
+
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing import sequence
+from tensorflow.keras.preprocessing.text import Tokenizer
+
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense
+from keras.callbacks import EarlyStopping
 
 from fakenews.data import load_data
 from fakenews.preprocessor import preprocessing
@@ -25,13 +32,52 @@ def create_model():
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, random_state=0)
 
-    pipe = make_pipeline(TfidfVectorizer(), MultinomialNB())
+    # Set parameters
+    max_features = 100000  # Maximum number of words to get out of our data
+    max_len = 300  # Maximum sequence length
+    embedding_dim = 50  # Dimensionality of word embeddings
 
-    pipe.fit(X_train, y_train)
+    #tokenizing
+    tk = Tokenizer(num_words=20000)
+    tk.fit_on_texts(X_train)
 
-    score = pipe.score(X_test, y_test)
+    #tokenization
+    X_train_token = tk.texts_to_sequences(X_train)
+    X_test_token=tk.texts_to_sequences(X_test)
 
-    with open("pipeline.pkl", "wb") as file:
-        pickle.dump(pipe, file)
+    # Pad the inputs to a fixed length
+    X_train_pad = pad_sequences(X_train_token,  padding='pre', maxlen=max_len)
+    X_test_pad=pad_sequences(X_test_token,  padding='pre', maxlen=max_len)
 
-    print(f"✅ Model created with accuracy of: {round(score,2)}")
+    # Build the model
+    model = Sequential()
+    model.add(Embedding(max_features, embedding_dim))
+    model.add(LSTM(16))
+    model.add(Dense(1, activation='sigmoid'))
+
+    # Compile the model
+    metrics=['accuracy', 'Precision', 'Recall' ]
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=metrics)
+
+    # Define Early Stopping
+    early_stopping = EarlyStopping(
+    monitor='val_accuracy',  # Stop when validation Recall stops improving
+    patience=5,          # Wait for 5 epochs without improvement before stopping
+    mode="max",
+    restore_best_weights=True  # Restore the best model weights after stopping
+    )
+
+    # Train the model
+    model.fit(X_train_pad, y_train, batch_size=128, epochs=20, validation_data=(X_test_pad, y_test), callbacks=[early_stopping])
+
+    # Evaluate the model
+    score=model.evaluate(X_test_pad, y_test, return_dict=True)
+    accuracy=score["accuracy"]
+
+    with open("model.pkl", "wb") as file:
+        pickle.dump(model, file)
+
+    with open("tk.pkl", "wb") as file:
+        pickle.dump(tk, file)
+
+    print(f"✅ Model created with accuracy of: {round(accuracy,2)}")
