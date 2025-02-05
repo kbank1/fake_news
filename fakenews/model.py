@@ -38,7 +38,7 @@ def create_model():
     embedding_dim = 50  # Dimensionality of word embeddings
 
     #tokenizing
-    tk = Tokenizer(num_words=40000)
+    tk = Tokenizer(num_words=max_features)
     tk.fit_on_texts(X_train)
 
     #tokenization
