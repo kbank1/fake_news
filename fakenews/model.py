@@ -33,12 +33,12 @@ def create_model():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, random_state=0)
 
     # Set parameters
-    max_features = 100000  # Maximum number of words to get out of our data
+    max_features = 40000  # Maximum number of words to get out of our data
     max_len = 300  # Maximum sequence length
     embedding_dim = 50  # Dimensionality of word embeddings
 
     #tokenizing
-    tk = Tokenizer(num_words=20000)
+    tk = Tokenizer(num_words=40000)
     tk.fit_on_texts(X_train)
 
     #tokenization
